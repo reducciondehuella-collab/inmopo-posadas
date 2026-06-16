@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InmoPosadas — Mapa Inmobiliario en Tiempo Real</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+/* ── VARIABLES ─────────────────────────────────────────────────────────── */
+:root {
+  --v:#1a5c3a; --vc:#2d8a57; --vs:#e8f5ee;
+  --d:#c9a84c; --dl:#f0d87a;
+  --gc:#f7f6f2; --gm:#e0ddd5; --gt:#555; --w:#fff;
+  --sh:0 4px 24px rgba(0,0,0,.10);
+  --shh:0 8px 32px rgba(0,0,0,.18);
+  --rad:12px; --rads:8px;
+  --header-h:60px;
+  --banner-h:30px;
+  --top-h:90px; /* header + banner */
+}
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+html, body { height:100%; overflow:hidden; }
+body { font-family:'DM Sans',sans-serif; background:var(--gc); color:#222; display:flex; flex-direction:column; }
+
+/* ── HEADER ────────────────────────────────────────────────────────────── */
+header {
+  flex-shrink:0;
+  height:var(--header-h);
+  background:var(--v); color:var(--w);
+  padding:0 1.4rem;
+  display:flex; align-items:center; gap:1rem;
+  box-shadow:0 2px 12px rgba(0,0,0,.18);
+  position:relative; z-index:200;
+}
+.logo { display:flex; align-items:center; gap:9px; flex-shrink:0; }
+.logo-icon { width:36px; height:36px; background:var(--d); border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:18px; line-height:1; }
+.logo-text { font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; line-height:1; }
+.logo-sub  { font-size:.6rem; font-weight:300; opacity:.7; letter-spacing:2px; text-transform:uppercase; margin-top:2px; }
+.hdr-mid   { flex:1; display:flex; justify-content:center; }
+.search-bar { display:flex; align-items:center; gap:7px; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.24); border-radius:22px; padding:5px 14px; width:100%; max-width:360px; }
+.search-bar input { background:none; border:none; outline:none; color:#fff; font-family:'DM Sans',sans-serif; font-size:.83rem; width:100%; }
+.search-bar input::placeholder { color:rgba(255,255,255,.55); }
+.hdr-right { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+.hdr-stat  { font-size:.72rem; text-align:right; line-height:1.45; }
+.hdr-stat strong { color:var(--dl); }
+.btn-refresh { background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.28); color:#fff; padding:5px 12px; border-radius:18px; font-size:.72rem; cursor:pointer; font-family:'DM Sans',sans-serif; transition:background .2s; white-space:nowrap; }
+.btn-refresh:hover   { background:rgba(255,255,255,.26); }
+.btn-refresh:disabled{ opacity:.45; cursor:default; }
+
+/* ── BANNER ────────────────────────────────────────────────────────────── */
+.banner {
+  flex-shrink:0;
+  height:var(--banner-h);
+  background:#fff8e1; border-bottom:1px solid #ffe082;
+  padding:0 1.4rem;
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  font-size:.73rem; color:#7a5a00;
+  position:relative; z-index:190;
+  overflow:hidden;
+}
+.banner-left { display:flex; align-items:center; gap:7px; min-width:0; overflow:hidden; }
+.banner-left span { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.banner-right { font-size:.67rem; opacity:.65; flex-shrink:0; }
+.spinner { width:13px; height:13px; border:2px solid #c9a84c; border-top-color:transparent; border-radius:50%; animation:spin .8s linear infinite; flex-shrink:0; }
+.spinner.hidden { display:none; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* ── MAIN LAYOUT ───────────────────────────────────────────────────────── */
+.main-layout {
+  flex:1;
+  display:flex;
+  /* Altura = 100vh menos header y banner exactos */
+  height:calc(100vh - var(--top-h));
+  min-height:0;
+  overflow:hidden;
+}
+
+/* ── SIDEBAR ───────────────────────────────────────────────────────────── */
+.sidebar {
+  width:340px;
+  min-width:280px;
+  flex-shrink:0;
+  background:var(--w);
+  display:flex;
+  flex-direction:column;
+  border-right:1px solid var(--gm);
+  overflow:hidden;
+  /* z-index no necesario aquí — el mapa está al lado, no debajo */
+}
+.sidebar-top {
+  flex-shrink:0;
+  padding:.85rem 1rem .65rem;
+  border-bottom:1px solid var(--gm);
+  background:var(--w);
+}
+.sidebar-title { font-family:'Playfair Display',serif; font-size:.92rem; font-weight:600; color:var(--v); margin-bottom:.55rem; }
+.filtros { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:6px; }
+.filtro-select {
+  width:100%; padding:6px 9px;
+  border:1.5px solid var(--gm); border-radius:var(--rads);
+  font-size:.78rem; font-family:'DM Sans',sans-serif; color:#333;
+  background:var(--gc);
+  cursor:pointer; transition:border-color .2s;
+  appearance:none; -webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 8px center; padding-right:24px;
+}
+.filtro-select:focus { border-color:var(--vc); outline:none; }
+.f-precio { grid-column:1/-1; }
+.precio-labels { display:flex; justify-content:space-between; font-size:.7rem; color:var(--gt); margin-bottom:3px; }
+input[type=range] { width:100%; accent-color:var(--v); cursor:pointer; display:block; }
+
+/* Stats chips — sin overflow */
+.stats-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:5px; margin-top:6px; }
+.stat-chip {
+  background:var(--vs); border-radius:18px; padding:3px 4px;
+  text-align:center; font-size:.62rem; color:var(--v); font-weight:500;
+  min-width:0; overflow:hidden;
+}
+.stat-chip strong { font-size:.82rem; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* Tabs */
+.tab-row { display:flex; border-bottom:1px solid var(--gm); flex-shrink:0; }
+.tab { flex:1; padding:7px; text-align:center; font-size:.76rem; font-weight:500; cursor:pointer; color:var(--gt); border-bottom:2.5px solid transparent; transition:all .18s; user-select:none; }
+.tab.active { color:var(--v); border-bottom-color:var(--v); }
+
+/* Lista */
+.panel { flex:1; overflow-y:auto; padding:.65rem .85rem; display:flex; flex-direction:column; gap:8px; min-height:0; }
+.panel.hidden { display:none; }
+.card-inm {
+  background:var(--w); border:1.5px solid var(--gm); border-radius:var(--rad);
+  padding:10px 12px; cursor:pointer; transition:border-color .18s, box-shadow .18s, transform .18s;
+  position:relative; flex-shrink:0;
+}
+.card-inm:hover  { border-color:var(--vc); box-shadow:var(--sh); transform:translateY(-1px); }
+.card-inm.activa { border-color:var(--v); box-shadow:0 0 0 3px rgba(45,138,87,.14); }
+.card-tipo   { font-size:.64rem; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--vc); margin-bottom:2px; }
+.card-titulo { font-weight:600; font-size:.85rem; color:#1a1a1a; margin-bottom:2px; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.card-barrio { font-size:.73rem; color:var(--gt); margin-bottom:4px; }
+.card-precio { font-family:'Playfair Display',serif; font-size:.98rem; font-weight:700; color:var(--v); }
+.card-precio .mon { font-size:.7rem; font-weight:400; opacity:.65; }
+.card-chips   { display:flex; gap:6px; margin-top:5px; flex-wrap:wrap; }
+.chip         { font-size:.68rem; color:var(--gt); background:var(--gc); padding:2px 7px; border-radius:18px; border:1px solid var(--gm); }
+.card-fuente  { font-size:.63rem; color:#bbb; margin-top:4px; display:flex; align-items:center; gap:4px; }
+.f-dot        { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.badge-nuevo  { position:absolute; top:8px; right:8px; background:var(--d); color:#7a5a00; font-size:.58rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; padding:2px 7px; border-radius:18px; }
+.no-results   { text-align:center; padding:2.5rem 1rem; color:#bbb; font-size:.83rem; line-height:1.7; }
+
+/* ── MAPA ──────────────────────────────────────────────────────────────── */
+.mapa-wrap { flex:1; position:relative; min-width:0; overflow:hidden; }
+#map { position:absolute; inset:0; width:100%; height:100%; }
+
+/* Leyenda */
+.leyenda {
+  position:absolute; bottom:26px; left:14px;
+  background:rgba(255,255,255,.97); border-radius:var(--rad);
+  padding:8px 12px; font-size:.7rem; box-shadow:var(--sh);
+  z-index:10; border:1px solid var(--gm);
+  pointer-events:none;
+}
+.leyenda-tit { font-weight:600; font-size:.65rem; text-transform:uppercase; letter-spacing:1px; color:#999; margin-bottom:4px; }
+.leyenda-item { display:flex; align-items:center; gap:5px; margin-bottom:2px; color:#444; line-height:1; }
+.leyenda-dot  { width:10px; height:10px; border-radius:50%; border:2px solid rgba(0,0,0,.1); flex-shrink:0; }
+
+/* Overlay de carga sobre el mapa */
+.mapa-overlay {
+  position:absolute; inset:0;
+  background:rgba(247,246,242,.85);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  z-index:20; gap:14px;
+  font-size:.88rem; color:var(--v); font-weight:500;
+  transition:opacity .35s;
+}
+.mapa-overlay.fade { opacity:0; pointer-events:none; }
+.big-spin { width:40px; height:40px; border:3px solid var(--vc); border-top-color:transparent; border-radius:50%; animation:spin .85s linear infinite; }
+
+/* Popup Leaflet */
+.leaflet-popup-content-wrapper { border-radius:var(--rad) !important; box-shadow:var(--shh) !important; padding:0 !important; overflow:hidden !important; }
+.leaflet-popup-content { margin:0 !important; width:auto !important; }
+.leaflet-popup-tip { background:var(--v) !important; }
+.popup-box   { padding:11px 14px; min-width:190px; max-width:240px; }
+.popup-tipo  { font-size:.63rem; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--vc); margin-bottom:2px; }
+.popup-tit   { font-weight:600; font-size:.83rem; color:#1a1a1a; line-height:1.3; margin-bottom:3px; }
+.popup-prec  { font-family:'Playfair Display',serif; font-size:.98rem; font-weight:700; color:var(--v); }
+.popup-barr  { font-size:.7rem; color:#888; margin-top:2px; }
+.popup-btn   { margin-top:8px; background:var(--v); color:#fff; border:none; border-radius:var(--rads); padding:5px 12px; font-size:.73rem; font-weight:600; cursor:pointer; width:100%; font-family:'DM Sans',sans-serif; transition:background .18s; }
+.popup-btn:hover { background:var(--vc); }
+
+/* ── MODAL ─────────────────────────────────────────────────────────────── */
+/* Usa un wrapper flow (no fixed) para evitar colapso en iframe */
+.modal-backdrop {
+  display:none;
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.52);
+  z-index:1000;
+  align-items:center; justify-content:center;
+  padding:1rem;
+}
+.modal-backdrop.open { display:flex; }
+.modal-box {
+  background:var(--w); border-radius:16px;
+  max-width:500px; width:100%;
+  box-shadow:0 20px 60px rgba(0,0,0,.28);
+  max-height:90vh; display:flex; flex-direction:column;
+  overflow:hidden;
+  animation:slideUp .22s ease both;
+}
+@keyframes slideUp { from { transform:translateY(28px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+.modal-head { background:var(--v); padding:1rem 1.3rem; color:#fff; position:relative; flex-shrink:0; }
+.modal-tipo { font-size:.65rem; font-weight:500; letter-spacing:2px; text-transform:uppercase; opacity:.68; margin-bottom:3px; }
+.modal-tit  { font-family:'Playfair Display',serif; font-size:1.05rem; font-weight:700; line-height:1.3; padding-right:36px; }
+.modal-prec { font-size:1.3rem; font-weight:700; color:var(--dl); margin-top:4px; font-family:'Playfair Display',serif; }
+.modal-x { position:absolute; top:10px; right:10px; background:rgba(255,255,255,.14); border:none; color:#fff; width:28px; height:28px; border-radius:50%; cursor:pointer; font-size:.95rem; display:flex; align-items:center; justify-content:center; transition:background .18s; line-height:1; }
+.modal-x:hover { background:rgba(255,255,255,.26); }
+.fotos-row { display:flex; gap:5px; overflow-x:auto; padding:7px 1.3rem; background:#f4f3ef; flex-shrink:0; }
+.fotos-row:empty { display:none; }
+.foto-thumb { width:96px; height:66px; object-fit:cover; border-radius:var(--rads); flex-shrink:0; cursor:pointer; }
+.foto-thumb:hover { opacity:.84; }
+.modal-body { padding:.9rem 1.3rem; overflow-y:auto; flex:1; min-height:0; }
+.detalles-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:.9rem; }
+.det-item { background:var(--gc); border-radius:var(--rads); padding:6px 10px; }
+.det-label { font-size:.64rem; color:#999; text-transform:uppercase; letter-spacing:.5px; }
+.det-val   { font-size:.87rem; font-weight:600; color:#1a1a1a; margin-top:2px; word-break:break-word; }
+.modal-desc { font-size:.8rem; line-height:1.6; color:var(--gt); margin-bottom:.85rem; padding:8px; background:var(--vs); border-radius:var(--rads); border-left:3px solid var(--vc); }
+.modal-link { display:flex; align-items:center; gap:5px; font-size:.73rem; color:var(--v); text-decoration:none; margin-bottom:.85rem; font-weight:500; word-break:break-all; }
+.modal-link:hover { text-decoration:underline; }
+.form-sec  { font-size:.8rem; font-weight:600; color:#333; margin-bottom:.6rem; }
+.form-lbl  { display:block; font-size:.72rem; font-weight:600; color:#666; margin-bottom:3px; text-transform:uppercase; letter-spacing:.4px; }
+.form-in   { width:100%; padding:8px 12px; border:1.5px solid var(--gm); border-radius:var(--rads); font-size:.85rem; font-family:'DM Sans',sans-serif; color:#1a1a1a; transition:border-color .18s; margin-bottom:8px; background:var(--gc); }
+.form-in:focus { border-color:var(--vc); outline:none; background:#fff; }
+.btns-row  { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+.btn-contact { padding:10px 14px; border:none; border-radius:var(--rads); font-family:'DM Sans',sans-serif; font-size:.83rem; font-weight:600; cursor:pointer; transition:all .18s; display:flex; align-items:center; justify-content:center; gap:6px; text-decoration:none; line-height:1; }
+.btn-email { background:var(--v); color:#fff; }
+.btn-email:hover { background:var(--vc); transform:translateY(-1px); }
+.btn-wsp   { background:#25d366; color:#fff; }
+.btn-wsp:hover { background:#1ec95e; transform:translateY(-1px); }
+
+/* ── NOTIFICACIÓN ──────────────────────────────────────────────────────── */
+.notif { position:fixed; bottom:20px; right:20px; background:var(--v); color:#fff; padding:9px 16px; border-radius:var(--rad); font-size:.8rem; font-weight:500; box-shadow:var(--shh); z-index:2000; opacity:0; transform:translateY(18px); transition:all .28s; pointer-events:none; }
+.notif.show { opacity:1; transform:translateY(0); }
+
+/* ── SCROLLBARS ────────────────────────────────────────────────────────── */
+.panel::-webkit-scrollbar, .modal-body::-webkit-scrollbar { width:4px; }
+.panel::-webkit-scrollbar-thumb, .modal-body::-webkit-scrollbar-thumb { background:var(--gm); border-radius:3px; }
+
+/* ── RESPONSIVE ────────────────────────────────────────────────────────── */
+@media (max-width:800px) {
+  :root { --top-h:90px; }
+  .main-layout { flex-direction:column; height:calc(100vh - var(--top-h)); }
+  .sidebar { width:100%; min-width:0; height:310px; flex-shrink:0; border-right:none; border-bottom:1px solid var(--gm); }
+  .mapa-wrap { flex:1; min-height:200px; }
+  .hdr-mid { display:none; }
+  .stats-bar { grid-template-columns:repeat(2,1fr); }
+  .btns-row  { grid-template-columns:1fr; }
+  .detalles-grid { grid-template-columns:1fr; }
+  .modal-box { max-width:100%; margin:0; border-radius:12px 12px 0 0; }
+  .modal-backdrop { align-items:flex-end; padding:0; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🏡</div>
+    <div>
+      <div class="logo-text">InmoPosadas</div>
+      <div class="logo-sub">Mapa Inmobiliario</div>
+    </div>
+  </div>
+  <div class="hdr-mid">
+    <div class="search-bar">
+      <span>🔍</span>
+      <input type="text" id="busqueda-global" placeholder="Buscar barrio, dirección, inmobiliaria...">
+    </div>
+  </div>
+  <div class="hdr-right">
+    <div class="hdr-stat">
+      <strong id="hdr-total">—</strong> propiedades<br>
+      <span id="hdr-fecha" style="opacity:.65;font-size:.65rem;">cargando...</span>
+    </div>
+    <button class="btn-refresh" id="btn-refresh" onclick="forzarRefresh()">🔄 Actualizar</button>
+  </div>
+</header>
+
+<!-- BANNER STATUS -->
+<div class="banner" id="banner">
+  <div class="banner-left">
+    <div class="spinner" id="banner-spinner"></div>
+    <span id="banner-msg">Conectando con el servidor...</span>
+  </div>
+  <div class="banner-right">Posadas · Misiones · Argentina</div>
+</div>
+
+<!-- LAYOUT PRINCIPAL -->
+<div class="main-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <div class="sidebar-title">Filtrar propiedades</div>
+      <div class="filtros">
+        <select class="filtro-select" id="f-tipo"    onchange="aplicarFiltros()">
+          <option value="">Todos los tipos</option>
+          <option value="Casa">Casa</option>
+          <option value="Departamento">Departamento</option>
+          <option value="Terreno">Terreno</option>
+          <option value="Local">Local</option>
+          <option value="Duplex">Dúplex</option>
+          <option value="PH">PH</option>
+        </select>
+        <select class="filtro-select" id="f-barrio"  onchange="aplicarFiltros()">
+          <option value="">Todos los barrios</option>
+        </select>
+        <select class="filtro-select" id="f-moneda"  onchange="aplicarFiltros()">
+          <option value="">Toda moneda</option>
+          <option value="USD">USD (dólares)</option>
+          <option value="ARS">ARS (pesos)</option>
+        </select>
+        <select class="filtro-select" id="f-fuente"  onchange="aplicarFiltros()">
+          <option value="">Todas las fuentes</option>
+        </select>
+        <select class="filtro-select" id="f-dorms"   onchange="aplicarFiltros()">
+          <option value="">Dorms. (todos)</option>
+          <option value="1">1 dormitorio</option>
+          <option value="2">2 dormitorios</option>
+          <option value="3">3 dormitorios</option>
+          <option value="4">4+ dormitorios</option>
+        </select>
+        <select class="filtro-select" id="f-orden"   onchange="aplicarFiltros()">
+          <option value="asc">Precio ↑</option>
+          <option value="desc">Precio ↓</option>
+          <option value="fecha">Más recientes</option>
+        </select>
+        <div class="f-precio">
+          <div class="precio-labels">
+            <span>Precio máx. USD</span>
+            <span id="precio-val">600.000</span>
+          </div>
+          <input type="range" id="f-precio" min="10000" max="600000" step="5000" value="600000"
+            oninput="actualizarSlider(this.value)">
+        </div>
+      </div>
+
+      <div class="stats-bar">
+        <div class="stat-chip"><strong id="s-count">0</strong>resultados</div>
+        <div class="stat-chip"><strong id="s-min">—</strong>mín USD</div>
+        <div class="stat-chip"><strong id="s-prom">—</strong>prom USD</div>
+        <div class="stat-chip"><strong id="s-max">—</strong>máx USD</div>
+      </div>
+    </div>
+
+    <div class="tab-row">
+      <div class="tab active" id="tab-lista"  onclick="switchTab('lista')">📋 Lista</div>
+      <div class="tab"        id="tab-stats"  onclick="switchTab('stats')">📊 Estadísticas</div>
+    </div>
+
+    <div class="panel"        id="panel-lista"></div>
+    <div class="panel hidden" id="panel-stats"></div>
+  </aside>
+
+  <!-- MAPA -->
+  <div class="mapa-wrap">
+    <div id="map"></div>
+
+    <div class="leyenda">
+      <div class="leyenda-tit">Tipo de inmueble</div>
+      <div class="leyenda-item"><div class="leyenda-dot" style="background:#1a5c3a"></div>Casa</div>
+      <div class="leyenda-item"><div class="leyenda-dot" style="background:#2980b9"></div>Depto / PH</div>
+      <div class="leyenda-item"><div class="leyenda-dot" style="background:#c9a84c"></div>Terreno</div>
+      <div class="leyenda-item"><div class="leyenda-dot" style="background:#8e44ad"></div>Local</div>
+      <div class="leyenda-item"><div class="leyenda-dot" style="background:#c0392b"></div>Dúplex</div>
+    </div>
+
+    <div class="mapa-overlay" id="mapa-overlay">
+      <div class="big-spin"></div>
+      <span>Cargando propiedades...</span>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE CONTACTO -->
+<div class="modal-backdrop" id="modal-bd" onclick="cerrarModalBD(event)">
+  <div class="modal-box" id="modal-box">
+    <div class="modal-head">
+      <div class="modal-tipo" id="m-tipo"></div>
+      <div class="modal-tit"  id="m-tit"></div>
+      <div class="modal-prec" id="m-prec"></div>
+      <button class="modal-x" onclick="cerrarModal()" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="fotos-row" id="m-fotos"></div>
+    <div class="modal-body">
+      <div class="detalles-grid" id="m-detalles"></div>
+      <div class="modal-desc"    id="m-desc"></div>
+      <a   class="modal-link"    id="m-link" href="#" target="_blank" rel="noopener noreferrer">🔗 Ver publicación original</a>
+
+      <div class="form-sec">Solicitar información o visita</div>
+      <label class="form-lbl">Nombre completo</label>
+      <input class="form-in" type="text"  id="c-nombre" placeholder="Ej: María González">
+      <label class="form-lbl">Correo electrónico</label>
+      <input class="form-in" type="email" id="c-email"  placeholder="tu@email.com">
+      <label class="form-lbl">WhatsApp (con código de área)</label>
+      <input class="form-in" type="tel"   id="c-tel"    placeholder="+54 9 376 xxx-xxxx">
+
+      <div class="btns-row">
+        <button class="btn-contact btn-email" onclick="contactarEmail()">✉️ Enviar consulta</button>
+        <a      class="btn-contact btn-wsp"   id="btn-wsp" href="#" target="_blank" rel="noopener noreferrer">💬 WhatsApp</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST NOTIFICACIÓN -->
+<div class="notif" id="notif"></div>
+
+<!-- LEAFLET -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+'use strict';
+
+// ── CONFIG ──────────────────────────────────────────────────────────────────
+const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? 'http://localhost:8000' : '';
+
+const C_TIPO = {
+  Casa:'#1a5c3a', Departamento:'#2980b9', PH:'#2980b9',
+  Terreno:'#c9a84c', Local:'#8e44ad', Duplex:'#c0392b',
+};
+const C_FUENTE = {
+  'MercadoLibre':'#f5a623', 'ZonaProp':'#ff6b35',
+  'Argenprop':'#4a90d9',    'Fénix Inmobiliaria':'#2d8a57',
+  'Costa Remates':'#8e44ad','Origen Propiedades':'#c0392b',
+};
+
+// ── ESTADO ──────────────────────────────────────────────────────────────────
+let TODAS = [];
+let FILTRADAS = [];
+let markers = {};
+let activaId = null;
+let modalProp = null;
+let tabActual = 'lista';
+
+// ── MAPA ────────────────────────────────────────────────────────────────────
+const map = L.map('map', {
+  center: [-27.3671, -55.8964],
+  zoom: 13,
+  zoomControl: true,
+  preferCanvas: false,
+});
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap &copy; CARTO',
+  maxZoom: 19,
+}).addTo(map);
+
+// Corregir tamaño del mapa cuando el sidebar cambia
+setTimeout(() => map.invalidateSize(), 300);
+window.addEventListener('resize', () => map.invalidateSize());
+
+// ── ICONOS ──────────────────────────────────────────────────────────────────
+function mkIcon(prop) {
+  const color = C_TIPO[prop.tipo] || '#555';
+  const txt   = fmtCorto(prop);
+  // Ancho dinámico en base al texto, mínimo 88px
+  const w = Math.max(88, txt.length * 7.5 + 22);
+  const h = 36;
+  const tipH = 8;
+  const totalH = h + tipH;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg"
+      width="${w}" height="${totalH}" viewBox="0 0 ${w} ${totalH}"
+      style="overflow:visible;display:block">
+    <rect x="1" y="1" width="${w-2}" height="${h-2}" rx="6"
+      fill="${color}" stroke="rgba(0,0,0,.18)" stroke-width="1"/>
+    <polygon points="${w/2-6},${h} ${w/2},${totalH-1} ${w/2+6},${h}"
+      fill="${color}"/>
+    <text x="${w/2}" y="${h/2+4}" text-anchor="middle"
+      font-family="system-ui,sans-serif" font-size="10.5" font-weight="700"
+      fill="white" style="pointer-events:none">${txt}</text>
+  </svg>`;
+  return L.divIcon({
+    className: '',
+    html: svg,
+    iconSize:   [w, totalH],
+    iconAnchor: [w/2, totalH],
+    popupAnchor:[0, -(totalH + 4)],
+  });
+}
+
+// ── FORMATO PRECIOS ─────────────────────────────────────────────────────────
+function fmtCorto(p) {
+  const v = p.precio, m = p.moneda;
+  if (m === 'USD') return v >= 1000 ? `USD ${Math.round(v/1000)}k` : `USD ${v}`;
+  return v >= 1000000 ? `$${Math.round(v/1000000)}M` : `$${Math.round(v/1000)}k`;
+}
+function fmtLargo(p) {
+  if (p.moneda === 'USD') return `USD ${p.precio.toLocaleString('es-AR')}`;
+  return `$ ${p.precio.toLocaleString('es-AR')}`;
+}
+function toUSD(p) {
+  return p.moneda === 'USD' ? p.precio : p.precio / 1200;
+}
+
+// ── CARGA DE DATOS ──────────────────────────────────────────────────────────
+async function cargarDatos() {
+  bannerSet('Conectando con el servidor...', true);
+  try {
+    const sr = await fetch(`${API}/api/status`).catch(() => null);
+    if (!sr || !sr.ok) {
+      bannerSet('⚠️ Servidor no disponible — ejecutá: python -m uvicorn backend.main:app --reload', false);
+      ocultarOverlay();
+      return;
+    }
+    const s = await sr.json();
+
+    if (s.scraping_en_curso) {
+      bannerSet('🔄 Scraping en curso, esperá unos minutos...', true);
+      setTimeout(cargarDatos, 8000);
+      return;
+    }
+    if (!s.datos_disponibles) {
+      bannerSet('📡 Primer inicio: lanzando scraping (2-5 min)...', true);
+      setTimeout(cargarDatos, 10000);
+      return;
+    }
+
+    const r = await fetch(`${API}/api/propiedades?limit=2000`);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d = await r.json();
+
+    TODAS = d.resultados || [];
+    poblarSelects();
+    aplicarFiltros();
+    actualizarHdrStats(s);
+    bannerSet(`✅ ${TODAS.length} propiedades cargadas · actualizado ${fmtFecha(s.ultima_actualizacion)}`, false);
+    ocultarOverlay();
+
+  } catch(e) {
+    bannerSet(`❌ ${e.message}`, false);
+    ocultarOverlay();
+  }
+}
+
+function fmtFecha(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('es-AR', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+}
+
+async function forzarRefresh() {
+  const btn = document.getElementById('btn-refresh');
+  btn.disabled = true;
+  bannerSet('🔄 Iniciando actualización...', true);
+  try {
+    const r = await fetch(`${API}/api/refresh`, { method:'POST' });
+    const d = await r.json();
+    toast('✅ ' + d.message);
+    setTimeout(cargarDatos, 6000);
+  } catch(e) {
+    toast('❌ Error al conectar');
+  } finally {
+    setTimeout(() => btn.disabled = false, 12000);
+  }
+}
+
+// ── SELECTS DINÁMICOS ───────────────────────────────────────────────────────
+function poblarSelects() {
+  const barrios = [...new Set(TODAS.map(p => p.barrio).filter(Boolean))].sort();
+  const fuentes = [...new Set(TODAS.map(p => p.fuente).filter(Boolean))].sort();
+
+  const sb = document.getElementById('f-barrio');
+  sb.innerHTML = '<option value="">Todos los barrios</option>';
+  barrios.forEach(b => { const o = document.createElement('option'); o.value = b; o.textContent = b; sb.appendChild(o); });
+
+  const sf = document.getElementById('f-fuente');
+  sf.innerHTML = '<option value="">Todas las fuentes</option>';
+  fuentes.forEach(f => { const o = document.createElement('option'); o.value = f; o.textContent = f; sf.appendChild(o); });
+}
+
+// ── FILTROS ─────────────────────────────────────────────────────────────────
+let busqTimer;
+document.getElementById('busqueda-global').addEventListener('input', function() {
+  clearTimeout(busqTimer);
+  busqTimer = setTimeout(aplicarFiltros, 280);
+});
+
+function actualizarSlider(v) {
+  document.getElementById('precio-val').textContent = parseInt(v).toLocaleString('es-AR');
+  aplicarFiltros();
+}
+
+function aplicarFiltros() {
+  const tipo   = document.getElementById('f-tipo').value;
+  const barrio = document.getElementById('f-barrio').value;
+  const moneda = document.getElementById('f-moneda').value;
+  const fuente = document.getElementById('f-fuente').value;
+  const dorms  = document.getElementById('f-dorms').value;
+  const orden  = document.getElementById('f-orden').value;
+  const maxUSD = parseInt(document.getElementById('f-precio').value);
+  const busq   = document.getElementById('busqueda-global').value.toLowerCase().trim();
+
+  FILTRADAS = TODAS.filter(p => {
+    if (tipo   && p.tipo !== tipo) return false;
+    if (barrio && !p.barrio.toLowerCase().includes(barrio.toLowerCase())) return false;
+    if (moneda && p.moneda !== moneda) return false;
+    if (fuente && p.fuente !== fuente) return false;
+    if (dorms) {
+      const d = parseInt(dorms);
+      if (d === 4 ? (p.dormitorios||0) < 4 : p.dormitorios !== d) return false;
+    }
+    if (toUSD(p) > maxUSD) return false;
+    if (busq && !`${p.titulo} ${p.barrio} ${p.direccion} ${p.inmobiliaria}`.toLowerCase().includes(busq)) return false;
+    return true;
+  });
+
+  FILTRADAS.sort((a, b) =>
+    orden === 'desc'  ? toUSD(b) - toUSD(a) :
+    orden === 'fecha' ? (b.fecha||'').localeCompare(a.fecha||'') :
+    toUSD(a) - toUSD(b)
+  );
+
+  renderLista();
+  renderMarcadores();
+  actualizarStats();
+}
+
+// ── LISTA ───────────────────────────────────────────────────────────────────
+function renderLista() {
+  const el = document.getElementById('panel-lista');
+
+  if (!FILTRADAS.length) {
+    el.innerHTML = '<div class="no-results">😕 Sin resultados con estos filtros.<br><small>Probá ampliar el rango de precio o quitar algún filtro.</small></div>';
+    return;
+  }
+
+  const frag = document.createDocumentFragment();
+  FILTRADAS.slice(0, 250).forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'card-inm' + (activaId === p.id ? ' activa' : '');
+    div.dataset.id = p.id;
+    const fc = C_FUENTE[p.fuente] || '#ccc';
+
+    div.innerHTML =
+      (p.nuevo ? '<span class="badge-nuevo">Nuevo</span>' : '') +
+      `<div class="card-tipo">${p.tipo}</div>
+       <div class="card-titulo">${esc(p.titulo)}</div>
+       <div class="card-barrio">📍 ${esc(p.barrio)}${p.direccion ? ' — '+esc(p.direccion) : ''}</div>
+       <div class="card-precio"><span class="mon">${p.moneda} </span>${p.precio.toLocaleString('es-AR')}</div>
+       <div class="card-chips">
+         ${p.m2_total    ? `<span class="chip">📐 ${p.m2_total}m²</span>`          : ''}
+         ${p.m2_cubierto ? `<span class="chip">🏠 ${p.m2_cubierto}m² cub.</span>`  : ''}
+         ${p.dormitorios ? `<span class="chip">🛏 ${p.dormitorios} dorm.</span>`   : ''}
+         ${p.banos       ? `<span class="chip">🚿 ${p.banos} baño${p.banos>1?'s':''}</span>` : ''}
+       </div>
+       <div class="card-fuente">
+         <div class="f-dot" style="background:${fc}"></div>
+         ${esc(p.fuente)}${p.inmobiliaria ? ' · '+esc(p.inmobiliaria) : ''}
+       </div>`;
+
+    div.addEventListener('click', () => abrirModal(p));
+    frag.appendChild(div);
+  });
+
+  el.innerHTML = '';
+  el.appendChild(frag);
+}
+
+// ── MARCADORES ──────────────────────────────────────────────────────────────
+function renderMarcadores() {
+  // Limpiar anteriores
+  Object.values(markers).forEach(m => map.removeLayer(m));
+  markers = {};
+
+  FILTRADAS.forEach(p => {
+    if (!p.lat || !p.lng || isNaN(p.lat) || isNaN(p.lng)) return;
+    const m = L.marker([p.lat, p.lng], { icon: mkIcon(p), riseOnHover:true })
+      .addTo(map);
+
+    // Popup con DOM nativo (evita inyección HTML)
+    m.bindPopup(() => {
+      const box = document.createElement('div');
+      box.className = 'popup-box';
+      box.innerHTML =
+        `<div class="popup-tipo">${esc(p.tipo)}</div>
+         <div class="popup-tit">${esc(p.titulo)}</div>
+         <div class="popup-prec">${fmtLargo(p)}</div>
+         <div class="popup-barr">📍 ${esc(p.barrio)}</div>`;
+      const btn = document.createElement('button');
+      btn.className = 'popup-btn';
+      btn.textContent = 'Ver detalle y contactar →';
+      btn.addEventListener('click', () => { map.closePopup(); abrirModal(p); });
+      box.appendChild(btn);
+      return box;
+    }, { maxWidth:260 });
+
+    m.on('click', () => {
+      resaltarCard(p.id);
+    });
+
+    markers[p.id] = m;
+  });
+}
+
+function resaltarCard(id) {
+  activaId = id;
+  document.querySelectorAll('.card-inm').forEach(c => {
+    c.classList.toggle('activa', c.dataset.id === id);
+  });
+  const card = document.querySelector(`.card-inm[data-id="${id}"]`);
+  if (card) card.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+// ── ESTADÍSTICAS ─────────────────────────────────────────────────────────────
+function actualizarStats() {
+  const n = FILTRADAS.length;
+  document.getElementById('s-count').textContent = n;
+  const usd = FILTRADAS.filter(p => p.moneda === 'USD' && p.precio > 0).map(p => p.precio);
+  if (usd.length) {
+    const min = Math.min(...usd), max = Math.max(...usd);
+    const avg = Math.round(usd.reduce((a,b)=>a+b,0)/usd.length);
+    document.getElementById('s-min').textContent  = fmtK(min);
+    document.getElementById('s-prom').textContent = fmtK(avg);
+    document.getElementById('s-max').textContent  = fmtK(max);
+  } else {
+    ['s-min','s-prom','s-max'].forEach(id => document.getElementById(id).textContent = '—');
+  }
+  if (tabActual === 'stats') renderStats();
+}
+
+function fmtK(v) {
+  return v >= 1000000 ? (v/1000000).toFixed(1)+'M' : v >= 1000 ? Math.round(v/1000)+'k' : v;
+}
+
+function actualizarHdrStats(s) {
+  document.getElementById('hdr-total').textContent = s.total_propiedades || TODAS.length;
+  document.getElementById('hdr-fecha').textContent = fmtFecha(s.ultima_actualizacion);
+}
+
+// ── PANEL ESTADÍSTICAS ───────────────────────────────────────────────────────
+function switchTab(tab) {
+  tabActual = tab;
+  document.getElementById('tab-lista').classList.toggle('active', tab === 'lista');
+  document.getElementById('tab-stats').classList.toggle('active', tab === 'stats');
+  document.getElementById('panel-lista').classList.toggle('hidden', tab !== 'lista');
+  document.getElementById('panel-stats').classList.toggle('hidden', tab !== 'stats');
+  if (tab === 'stats') renderStats();
+}
+
+function renderStats() {
+  const porTipo={}, porFuente={}, porBarrio={};
+  FILTRADAS.forEach(p => {
+    porTipo[p.tipo]     = (porTipo[p.tipo]||0)+1;
+    porFuente[p.fuente] = (porFuente[p.fuente]||0)+1;
+    porBarrio[p.barrio] = (porBarrio[p.barrio]||0)+1;
+  });
+  const total  = FILTRADAS.length || 1;
+  const barrios = Object.entries(porBarrio).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const maxB   = barrios[0]?.[1] || 1;
+
+  const bar = (n, max, color) =>
+    `<div style="flex:1;height:6px;background:${color||'#2d8a57'};border-radius:3px;opacity:.65;max-width:${Math.round(n/max*90)}px"></div>`;
+
+  document.getElementById('panel-stats').innerHTML = `
+    <div style="width:100%">
+      <p style="font-size:.73rem;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Por tipo</p>
+      ${Object.entries(porTipo).map(([t,n])=>`
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
+          <div style="width:9px;height:9px;border-radius:50%;background:${C_TIPO[t]||'#888'};flex-shrink:0"></div>
+          <span style="flex:1;font-size:.78rem">${t}</span>
+          ${bar(n,total,C_TIPO[t])}
+          <span style="font-size:.78rem;font-weight:600;min-width:22px;text-align:right">${n}</span>
+        </div>`).join('')}
+
+      <p style="font-size:.73rem;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:1px;margin:14px 0 8px">Por fuente</p>
+      ${Object.entries(porFuente).map(([f,n])=>`
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
+          <div style="width:7px;height:7px;border-radius:50%;background:${C_FUENTE[f]||'#aaa'};border:1px solid rgba(0,0,0,.15);flex-shrink:0"></div>
+          <span style="flex:1;font-size:.76rem">${f}</span>
+          <span style="font-size:.76rem;font-weight:600">${n}</span>
+        </div>`).join('')}
+
+      <p style="font-size:.73rem;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:1px;margin:14px 0 8px">Top barrios</p>
+      ${barrios.map(([b,n])=>`
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
+          <span style="flex:1;font-size:.76rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📍 ${b}</span>
+          ${bar(n,maxB,'#2d8a57')}
+          <span style="font-size:.76rem;font-weight:600;min-width:18px;text-align:right">${n}</span>
+        </div>`).join('')}
+    </div>`;
+}
+
+// ── MODAL ────────────────────────────────────────────────────────────────────
+function abrirModal(p) {
+  modalProp = p;
+  resaltarCard(p.id);
+
+  if (p.lat && p.lng) {
+    map.setView([p.lat, p.lng], 15, { animate:true });
+    if (markers[p.id]) markers[p.id].openPopup();
+  }
+
+  document.getElementById('m-tipo').textContent = p.tipo;
+  document.getElementById('m-tit').textContent  = p.titulo;
+  document.getElementById('m-prec').textContent = fmtLargo(p);
+
+  // Fotos
+  const fotosEl = document.getElementById('m-fotos');
+  fotosEl.innerHTML = '';
+  if (p.fotos && p.fotos.length) {
+    p.fotos.slice(0,6).forEach(src => {
+      const img = document.createElement('img');
+      img.className = 'foto-thumb';
+      img.src = src;
+      img.alt = 'foto';
+      img.loading = 'lazy';
+      img.onerror = () => img.remove();
+      img.onclick = () => window.open(src,'_blank');
+      fotosEl.appendChild(img);
+    });
+  }
+
+  // Detalles
+  const dets = [
+    { l:'Barrio',      v: p.barrio },
+    { l:'Dirección',   v: p.direccion || '—' },
+    p.m2_total    ? { l:'Sup. total',   v: p.m2_total+'m²'    } : null,
+    p.m2_cubierto ? { l:'Sup. cubierta',v: p.m2_cubierto+'m²' } : null,
+    p.dormitorios ? { l:'Dormitorios',  v: p.dormitorios       } : null,
+    p.banos       ? { l:'Baños',        v: p.banos             } : null,
+    { l:'Fuente',      v: p.fuente },
+    { l:'Inmobiliaria',v: p.inmobiliaria || '—' },
+    p.fecha       ? { l:'Publicado',    v: p.fecha             } : null,
+  ].filter(Boolean);
+
+  document.getElementById('m-detalles').innerHTML =
+    dets.map(d=>`<div class="det-item"><div class="det-label">${d.l}</div><div class="det-val">${esc(String(d.v))}</div></div>`).join('');
+
+  document.getElementById('m-desc').textContent = p.descripcion || p.titulo || '';
+
+  const link = document.getElementById('m-link');
+  if (p.url) { link.href = p.url; link.textContent = `🔗 Ver en ${p.fuente}`; link.style.display='flex'; }
+  else        { link.style.display='none'; }
+
+  // WhatsApp
+  const msg = encodeURIComponent(
+    `Hola! Consulto por la propiedad "${p.titulo}" (${p.barrio}) — ${fmtLargo(p)}. La vi en InmoPosadas. ¿Podemos coordinar más info?`
+  );
+  const num = (p.tel_inm||'').replace(/\D/g,'') || '5493760000000';
+  document.getElementById('btn-wsp').href = `https://wa.me/${num}?text=${msg}`;
+
+  document.getElementById('c-nombre').value = '';
+  document.getElementById('c-email').value  = '';
+  document.getElementById('c-tel').value    = '';
+
+  document.getElementById('modal-bd').classList.add('open');
+  // Forzar reflow del mapa por si cambió el layout
+  setTimeout(() => map.invalidateSize(), 250);
+}
+
+function cerrarModal() {
+  document.getElementById('modal-bd').classList.remove('open');
+}
+function cerrarModalBD(e) {
+  if (e.target === document.getElementById('modal-bd')) cerrarModal();
+}
+// Cerrar con Escape
+document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModal(); });
+
+function contactarEmail() {
+  const nombre = document.getElementById('c-nombre').value.trim();
+  const email  = document.getElementById('c-email').value.trim();
+  if (!modalProp) return;
+  if (!nombre || !email) { toast('✏️ Completá tu nombre y email'); return; }
+  const asunto = encodeURIComponent(`Consulta InmoPosadas: ${modalProp.titulo}`);
+  const cuerpo = encodeURIComponent(
+    `Hola ${modalProp.inmobiliaria||'equipo'},\n\n`+
+    `Me llamo ${nombre} y me interesa la propiedad:\n`+
+    `"${modalProp.titulo}" — ${modalProp.barrio} — ${fmtLargo(modalProp)}\n\n`+
+    `Quisiera más información y coordinar una visita.\n`+
+    `Mi email de respuesta: ${email}\n\n`+
+    `(Mensaje generado desde InmoPosadas.ar)`
+  );
+  window.open(`mailto:${modalProp.email_inm||'info@inmobiliaria.com'}?subject=${asunto}&body=${cuerpo}`,'_blank');
+  toast('✅ Abriendo cliente de correo...');
+}
+
+// ── HELPERS UI ───────────────────────────────────────────────────────────────
+function bannerSet(msg, loading) {
+  document.getElementById('banner-msg').textContent = msg;
+  document.getElementById('banner-spinner').classList.toggle('hidden', !loading);
+}
+
+function ocultarOverlay() {
+  const o = document.getElementById('mapa-overlay');
+  o.classList.add('fade');
+  setTimeout(() => o.remove(), 400);
+  // Forzar Leaflet a medir tamaño correcto tras el overlay
+  setTimeout(() => map.invalidateSize(), 450);
+}
+
+function toast(msg) {
+  const n = document.getElementById('notif');
+  n.textContent = msg;
+  n.classList.add('show');
+  clearTimeout(n._t);
+  n._t = setTimeout(() => n.classList.remove('show'), 3200);
+}
+
+// Escape HTML para evitar XSS en innerHTML
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+cargarDatos();
+
+// Polling: si el scraping termina, recargar automáticamente
+setInterval(async () => {
+  try {
+    const r = await fetch(`${API}/api/status`);
+    const s = await r.json();
+    if (s.datos_disponibles && TODAS.length === 0) cargarDatos();
+  } catch(e) {}
+}, 15000);
+</script>
+</body>
+</html>

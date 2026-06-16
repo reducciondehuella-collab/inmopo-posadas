@@ -2,10 +2,11 @@ services:
   - type: web
     name: inmopo-posadas
     runtime: python
+    region: oregon
+    plan: free
     buildCommand: pip install -r backend/requirements.txt
     startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    autoDeploy: true
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.0
-    plan: free
-    autoDeploy: true
+        value: "3.11.0"

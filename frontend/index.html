@@ -217,8 +217,31 @@ input[type=range] { width:100%; accent-color:var(--v); cursor:pointer; display:b
 .modal-x:hover { background:rgba(255,255,255,.26); }
 .fotos-row { display:flex; gap:5px; overflow-x:auto; padding:7px 1.3rem; background:#f4f3ef; flex-shrink:0; }
 .fotos-row:empty { display:none; }
-.foto-thumb { width:96px; height:66px; object-fit:cover; border-radius:var(--rads); flex-shrink:0; cursor:pointer; }
+.fotos-row.sin-fotos { padding:10px 1.3rem; }
+.foto-thumb { width:96px; height:66px; object-fit:cover; border-radius:var(--rads); flex-shrink:0; cursor:pointer; transition:opacity .15s; }
 .foto-thumb:hover { opacity:.84; }
+.foto-placeholder {
+  display:flex; align-items:center; gap:10px;
+  background:var(--gc); border:1.5px dashed var(--gm); border-radius:var(--rads);
+  padding:10px 14px; width:100%;
+}
+.ph-icon { font-size:1.6rem; flex-shrink:0; opacity:.7; }
+.ph-text { font-size:.76rem; color:#999; line-height:1.4; }
+
+/* Lightbox de fotos */
+.lightbox-bd {
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,.9);
+  z-index:3000; align-items:center; justify-content:center; padding:2rem;
+}
+.lightbox-bd.open { display:flex; }
+.lightbox-img { max-width:90vw; max-height:80vh; object-fit:contain; border-radius:8px; }
+.lightbox-close { position:absolute; top:18px; right:24px; background:rgba(255,255,255,.15); border:none; color:#fff; width:38px; height:38px; border-radius:50%; cursor:pointer; font-size:1.2rem; }
+.lightbox-close:hover { background:rgba(255,255,255,.28); }
+.lightbox-nav { position:absolute; top:50%; transform:translateY(-50%); background:rgba(255,255,255,.12); border:none; color:#fff; width:44px; height:44px; border-radius:50%; cursor:pointer; font-size:1.4rem; display:flex; align-items:center; justify-content:center; }
+.lightbox-nav:hover { background:rgba(255,255,255,.25); }
+.lightbox-prev { left:18px; }
+.lightbox-next { right:18px; }
+.lightbox-counter { position:absolute; bottom:18px; left:50%; transform:translateX(-50%); color:#fff; font-size:.8rem; background:rgba(0,0,0,.4); padding:4px 12px; border-radius:14px; }
 .modal-body { padding:.9rem 1.3rem; overflow-y:auto; flex:1; min-height:0; }
 .detalles-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; margin-bottom:.9rem; }
 .det-item { background:var(--gc); border-radius:var(--rads); padding:6px 10px; }
@@ -412,6 +435,15 @@ input[type=range] { width:100%; accent-color:var(--v); cursor:pointer; display:b
       </div>
     </div>
   </div>
+</div>
+
+<!-- LIGHTBOX DE FOTOS -->
+<div class="lightbox-bd" id="lightbox-bd" onclick="cerrarLightboxBD(event)">
+  <button class="lightbox-close" onclick="cerrarLightbox()" aria-label="Cerrar">✕</button>
+  <button class="lightbox-nav lightbox-prev" onclick="lightboxNav(-1)" aria-label="Anterior">‹</button>
+  <img class="lightbox-img" id="lightbox-img" src="" alt="">
+  <button class="lightbox-nav lightbox-next" onclick="lightboxNav(1)" aria-label="Siguiente">›</button>
+  <div class="lightbox-counter" id="lightbox-counter"></div>
 </div>
 
 <!-- TOAST NOTIFICACIÓN -->
@@ -807,17 +839,29 @@ function abrirModal(p) {
   // Fotos
   const fotosEl = document.getElementById('m-fotos');
   fotosEl.innerHTML = '';
-  if (p.fotos && p.fotos.length) {
-    p.fotos.slice(0,6).forEach(src => {
+  fotosEl.classList.remove('sin-fotos');
+
+  const fotosValidas = (p.fotos || []).filter(f => f && f.startsWith('http'));
+
+  if (fotosValidas.length) {
+    fotosValidas.slice(0,8).forEach(src => {
       const img = document.createElement('img');
       img.className = 'foto-thumb';
       img.src = src;
-      img.alt = 'foto';
+      img.alt = p.titulo;
       img.loading = 'lazy';
       img.onerror = () => img.remove();
-      img.onclick = () => window.open(src,'_blank');
+      img.onclick = () => abrirLightbox(fotosValidas, fotosValidas.indexOf(src));
       fotosEl.appendChild(img);
     });
+  } else {
+    // Placeholder elegante por tipo de inmueble (sin foto disponible)
+    fotosEl.classList.add('sin-fotos');
+    const iconos = { Casa:'🏠', Departamento:'🏢', PH:'🏘️', Terreno:'🌳', Local:'🏬', Duplex:'🏡' };
+    const ph = document.createElement('div');
+    ph.className = 'foto-placeholder';
+    ph.innerHTML = `<span class="ph-icon">${iconos[p.tipo] || '🏠'}</span><span class="ph-text">Sin fotos disponibles — consultá con ${esc(p.inmobiliaria || p.fuente)}</span>`;
+    fotosEl.appendChild(ph);
   }
 
   // Detalles
@@ -885,6 +929,38 @@ function contactarEmail() {
   toast('✅ Abriendo cliente de correo...');
 }
 
+// ── LIGHTBOX DE FOTOS ────────────────────────────────────────────────────────
+let lightboxFotos = [];
+let lightboxIdx = 0;
+
+function abrirLightbox(fotos, idx) {
+  lightboxFotos = fotos;
+  lightboxIdx = idx;
+  renderLightbox();
+  document.getElementById('lightbox-bd').classList.add('open');
+}
+function renderLightbox() {
+  document.getElementById('lightbox-img').src = lightboxFotos[lightboxIdx];
+  document.getElementById('lightbox-counter').textContent =
+    `${lightboxIdx + 1} / ${lightboxFotos.length}`;
+}
+function lightboxNav(dir) {
+  lightboxIdx = (lightboxIdx + dir + lightboxFotos.length) % lightboxFotos.length;
+  renderLightbox();
+}
+function cerrarLightbox() {
+  document.getElementById('lightbox-bd').classList.remove('open');
+}
+function cerrarLightboxBD(e) {
+  if (e.target === document.getElementById('lightbox-bd')) cerrarLightbox();
+}
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox-bd').classList.contains('open')) return;
+  if (e.key === 'Escape')     cerrarLightbox();
+  if (e.key === 'ArrowLeft')  lightboxNav(-1);
+  if (e.key === 'ArrowRight') lightboxNav(1);
+});
+
 // ── HELPERS UI ───────────────────────────────────────────────────────────────
 function bannerSet(msg, loading) {
   document.getElementById('banner-msg').textContent = msg;
@@ -893,6 +969,7 @@ function bannerSet(msg, loading) {
 
 function ocultarOverlay() {
   const o = document.getElementById('mapa-overlay');
+  if (!o) return; // ya fue removido — evita "Cannot read properties of null"
   o.classList.add('fade');
   setTimeout(() => o.remove(), 400);
   // Forzar Leaflet a medir tamaño correcto tras el overlay

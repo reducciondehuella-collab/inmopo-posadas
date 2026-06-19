@@ -256,6 +256,16 @@ def parse_html_generico(html, fuente_nombre, fuente_url, email, tel):
     precios = re.findall(r'U[SD$]+\s*([\d\.,]{4,})', html)
     titulos = [strip(t) for t in re.findall(r'<h[123][^>]*>(.*?)</h[123]>',html,re.DOTALL|re.IGNORECASE)
                if len(strip(t)) > 8]
+    # Imágenes generales de la página (fotos de propiedades, no logos/iconos)
+    imgs_pagina = re.findall(
+        r'(?:data-src|data-lazy|src)=["\']'
+        r'(https?://[^"\']+\.(?:jpg|jpeg|webp|png)(?:\?[^"\']*)?)["\']',
+        html, re.IGNORECASE
+    )
+    imgs_pagina = [u for u in imgs_pagina
+                   if not re.search(r'logo|icon|favicon|sprite|placeholder', u, re.IGNORECASE)]
+    imgs_pagina = list(dict.fromkeys(imgs_pagina))  # dedup preservando orden
+
     for i, precio_str in enumerate(precios[:25]):
         try:
             precio = int(precio_str.replace(".","").replace(",",""))
@@ -264,6 +274,8 @@ def parse_html_generico(html, fuente_nombre, fuente_url, email, tel):
             tipo   = tipo_de(titulo)
             barrio = barrio_de(titulo)
             lat, lng = geocode(barrio)
+            # Asignar 1-2 imágenes de la página a esta propiedad (mejor que nada)
+            fotos = imgs_pagina[i*2:i*2+2] if imgs_pagina else []
             items.append({
                 "id": pid(fuente_nombre, f"{precio}{titulo[:15]}"),
                 "ref_externa": f"{fuente_nombre[:3].upper()}-{i}",
@@ -273,7 +285,7 @@ def parse_html_generico(html, fuente_nombre, fuente_url, email, tel):
                 "precio": precio, "moneda": "USD",
                 "m2_total": None, "m2_cubierto": None,
                 "dormitorios": None, "banos": None,
-                "descripcion": titulo, "fotos": [], "url": fuente_url,
+                "descripcion": titulo, "fotos": fotos, "url": fuente_url,
                 "inmobiliaria": fuente_nombre, "email_inm": email, "tel_inm": tel,
                 "lat": lat, "lng": lng,
                 "fecha": datetime.today().strftime("%Y-%m-%d"), "nuevo": False,
@@ -311,6 +323,11 @@ async def scrape_zonaprop(client):
                     dorms = int(drm.group(1)) if drm else None
                     um = re.search(r'href=["\'](/propiedades/[^"\']+)["\']', ahtml)
                     url_p = "https://www.zonaprop.com.ar" + um.group(1) if um else ""
+                    # Extraer imágenes (data-flickity-lazyload o src directos de CDN)
+                    fotos_m = re.findall(r'(?:data-flickity-lazyload|data-src|src)=["\']'
+                                         r'(https://[^"\']+\.(?:jpg|jpeg|webp)[^"\']*)["\']',
+                                         ahtml, re.IGNORECASE)
+                    fotos = list(dict.fromkeys(fotos_m))[:6]  # dedup preservando orden
                     barrio = barrio_de(direccion+" "+titulo)
                     lat, lng = geocode(barrio)
                     if precio <= 0: continue
@@ -321,7 +338,7 @@ async def scrape_zonaprop(client):
                         "ciudad": "Posadas", "precio": precio, "moneda": moneda,
                         "m2_total": m2, "m2_cubierto": None,
                         "dormitorios": dorms, "banos": None,
-                        "descripcion": titulo, "fotos": [], "url": url_p,
+                        "descripcion": titulo, "fotos": fotos, "url": url_p,
                         "inmobiliaria": "ZonaProp", "email_inm": "", "tel_inm": "",
                         "lat": lat, "lng": lng,
                         "fecha": datetime.today().strftime("%Y-%m-%d"), "nuevo": False,
@@ -360,6 +377,10 @@ async def scrape_argenprop(client):
                     dorms = int(drm.group(1)) if drm else None
                     um = re.search(r'href=["\']([^"\']+propiedad[^"\']+)["\']', card)
                     url_p = "https://www.argenprop.com" + um.group(1) if um else ""
+                    fotos_m = re.findall(r'(?:data-src|data-lazy|src)=["\']'
+                                         r'(https://[^"\']+\.(?:jpg|jpeg|webp)[^"\']*)["\']',
+                                         card, re.IGNORECASE)
+                    fotos = list(dict.fromkeys(fotos_m))[:6]
                     barrio = barrio_de(direccion+" "+titulo)
                     lat, lng = geocode(barrio)
                     if precio <= 0: continue
@@ -369,7 +390,7 @@ async def scrape_argenprop(client):
                         "titulo": titulo, "barrio": barrio, "direccion": direccion,
                         "ciudad": "Posadas", "precio": precio, "moneda": moneda,
                         "m2_total": m2, "m2_cubierto": None, "dormitorios": dorms, "banos": None,
-                        "descripcion": titulo, "fotos": [], "url": url_p,
+                        "descripcion": titulo, "fotos": fotos, "url": url_p,
                         "inmobiliaria": "Argenprop", "email_inm": "", "tel_inm": "",
                         "lat": lat, "lng": lng,
                         "fecha": datetime.today().strftime("%Y-%m-%d"), "nuevo": False,

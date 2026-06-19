@@ -146,6 +146,31 @@ SEMILLA = [
   {"tipo":"Departamento","titulo":"Dpto 4 amb. en edificio exclusivo — Costanera","barrio":"Costanera","direccion":"Av. Costanera 3000","precio":155000,"moneda":"USD","m2_total":120,"dormitorios":3,"banos":2,"descripcion":"Departamento de categoría, dependencia de servicio, lavadero propio, dos cocheras, baulera, vista Paraná.","inmobiliaria":"Posadas Propiedades","email_inm":"info@posadasprops.com.ar","tel_inm":"+5493764123456","url":"https://www.posadasprops.com.ar","nuevo":True,"fuente":"Posadas Propiedades"},
   {"tipo":"Casa","titulo":"Casa 2 dorms. recién refaccionada — Km 4","barrio":"Km 4","direccion":"Calle El Bosque 88","precio":52000,"moneda":"USD","m2_total":85,"dormitorios":2,"banos":1,"descripcion":"Casa totalmente refaccionada, nueva instalación eléctrica y sanitaria, patio con quincho.","inmobiliaria":"BienInvertido Posadas","email_inm":"info@bieninvertido.com","tel_inm":"+5493764987654","url":"https://www.bieninvertido.com","nuevo":False,"fuente":"BienInvertido"},
   {"tipo":"Casa","titulo":"Casa 6 dorms. apta consultorios — Barrio Norte","barrio":"Barrio Norte","direccion":"Av. Mitre 1800","precio":280000,"moneda":"USD","m2_total":380,"dormitorios":6,"banos":4,"descripcion":"Gran propiedad, ideal para clínica, consultorio, geriátrico o residencia de categoría. Dos entradas independientes.","inmobiliaria":"Crest Inmobiliaria","email_inm":"ventas@crestposadas.com.ar","tel_inm":"+5493764112233","url":"https://www.crestposadas.com.ar","nuevo":False,"fuente":"Crest Inmobiliaria"},
+
+  # SOLARI BIENES RAÍCES (Colón y Alvear, Posadas)
+  {"tipo":"Departamento","titulo":"Dpto 2 dorms. a estrenar — Edificio Torre Sol","barrio":"Centro","direccion":"Colón 1350","precio":89000,"moneda":"USD","m2_total":65,"dormitorios":2,"banos":2,"descripcion":"Departamento a estrenar con cochera, amenities completos, balcón con vista a la ciudad.","inmobiliaria":"Solari Bienes Raíces","email_inm":"info@solaribienesraices.com.ar","tel_inm":"+5493764439998","url":"https://www.facebook.com/solari.bienesraices/","nuevo":True,"fuente":"Solari Bienes Raíces"},
+  {"tipo":"Casa","titulo":"Casa 3 dorms. con cochera doble — Villa Cabello","barrio":"Villa Cabello","direccion":"Alvear 2890","precio":135000,"moneda":"USD","m2_total":190,"dormitorios":3,"banos":2,"descripcion":"Casa de categoría con jardín amplio, cochera doble, dependencia de servicio y parrilla.","inmobiliaria":"Solari Bienes Raíces","email_inm":"info@solaribienesraices.com.ar","tel_inm":"+5493764439998","url":"https://www.facebook.com/solari.bienesraices/","nuevo":False,"fuente":"Solari Bienes Raíces"},
+  {"tipo":"Terreno","titulo":"Lote inversión 350m² — Itaembé Guazú","barrio":"Itaembé Guazú","direccion":"Calle 161 esquina 24","precio":24500,"moneda":"USD","m2_total":350,"dormitorios":0,"banos":0,"descripcion":"Excelente oportunidad de inversión, lote nivelado con todos los servicios disponibles.","inmobiliaria":"Solari Bienes Raíces","email_inm":"info@solaribienesraices.com.ar","tel_inm":"+5493764439998","url":"https://www.facebook.com/solari.bienesraices/","nuevo":True,"fuente":"Solari Bienes Raíces"},
+
+  # TORRES INMOBILIARIA (Salta 1789, Posadas — desde 1967)
+  {"tipo":"Departamento","titulo":"Edificio Victoria Regia — 2 dorms. con vista","barrio":"Centro","direccion":"Alvear N° 1977","precio":171130,"moneda":"USD","m2_total":85,"dormitorios":2,"banos":2,"descripcion":"Departamento en edificio premium, balcón, cochera, amenities, excelente ubicación céntrica.","inmobiliaria":"Torres Inmobiliaria","email_inm":"info@inmobiliariatorres.com.ar","tel_inm":"+543764533092","url":"https://inmobiliariatorres.com.ar","nuevo":False,"fuente":"Torres Inmobiliaria"},
+  {"tipo":"Casa","titulo":"Hermosa casa de 5 dormitorios — Av. Centenario","barrio":"Posadas","direccion":"Av Centenario N° 2954","precio":280000,"moneda":"USD","m2_total":310,"dormitorios":5,"banos":4,"descripcion":"Amplia propiedad familiar, doble cochera, parque, pileta y quincho cubierto.","inmobiliaria":"Torres Inmobiliaria","email_inm":"info@inmobiliariatorres.com.ar","tel_inm":"+543764533092","url":"https://inmobiliariatorres.com.ar","nuevo":True,"fuente":"Torres Inmobiliaria"},
+  {"tipo":"Terreno","titulo":"Terreno cerca de la costanera — 510m²","barrio":"Costanera","direccion":"Av. López Torres","precio":220000,"moneda":"USD","m2_total":510,"dormitorios":0,"banos":0,"descripcion":"Excelente terreno a metros de la costanera, ideal para desarrollo o vivienda de categoría.","inmobiliaria":"Torres Inmobiliaria","email_inm":"info@inmobiliariatorres.com.ar","tel_inm":"+543764533092","url":"https://inmobiliariatorres.com.ar","nuevo":False,"fuente":"Torres Inmobiliaria"},
+
+  # DAVIÑA INMOBILIARIA (Av. Trincheras de San José 2407)
+  {"tipo":"Departamento","titulo":"Departamento exclusivo en Costanera de Posadas","barrio":"Costanera","direccion":"Av. Roque Sáenz Peña 2300","precio":225000,"moneda":"USD","m2_total":125,"dormitorios":2,"banos":3,"descripcion":"A solo 200 metros del río Paraná, piso exclusivo con vista franca al río, dos dormitorios en suite.","inmobiliaria":"Daviña Inmobiliaria","email_inm":"davinainmobiliaria@gmail.com","tel_inm":"+5493764425983","url":"https://davinia.com.ar","nuevo":True,"fuente":"Daviña Inmobiliaria"},
+  {"tipo":"Casa","titulo":"Casa de 3 plantas — Barrio Villa Sarita","barrio":"Villa Sarita","direccion":"Hernández 2473","precio":195000,"moneda":"USD","m2_total":428,"dormitorios":4,"banos":3,"descripcion":"Ubicada en el histórico y residencial barrio de Villa Sarita, propiedad de gran categoría en tres plantas.","inmobiliaria":"Daviña Inmobiliaria","email_inm":"davinainmobiliaria@gmail.com","tel_inm":"+5493764425983","url":"https://davinia.com.ar","nuevo":False,"fuente":"Daviña Inmobiliaria"},
+  {"tipo":"Terreno","titulo":"Lote en esquina — Zona Residencia de Gobernación","barrio":"Posadas","direccion":"Av. Domingo Cabred & Perito Moreno","precio":110000,"moneda":"USD","m2_total":300,"dormitorios":0,"banos":0,"descripcion":"Inmueble en esquina con gran potencial constructivo en zona de excelente categoría.","inmobiliaria":"Daviña Inmobiliaria","email_inm":"davinainmobiliaria@gmail.com","tel_inm":"+5493764425983","url":"https://davinia.com.ar","nuevo":True,"fuente":"Daviña Inmobiliaria"},
+
+  # SOSA INMOBILIARIA (Estado de Israel 2809)
+  {"tipo":"Casa","titulo":"Casa 3 dormitorios — esquina Monseñor de Andrea","barrio":"Posadas","direccion":"Av. Monseñor de Andrea y Calle 122","precio":680000000,"moneda":"ARS","m2_total":180,"dormitorios":3,"banos":3,"descripcion":"Propiedad de lujo en esquina, dormitorio principal con baño en suite y jacuzzi.","inmobiliaria":"Sosa Inmobiliaria","email_inm":"","tel_inm":"+5493764422483","url":"https://www.sosainmobiliaria.com","nuevo":True,"fuente":"Sosa Inmobiliaria"},
+  {"tipo":"Casa","titulo":"Casa en piedra — Villa Sarita","barrio":"Villa Sarita","direccion":"Coronel Álvarez 2159","precio":420000000,"moneda":"ARS","m2_total":210,"dormitorios":3,"banos":2,"descripcion":"Propiedad única con sólida estructura en piedra, belleza arquitectónica atemporal y gran durabilidad.","inmobiliaria":"Sosa Inmobiliaria","email_inm":"","tel_inm":"+5493764422483","url":"https://www.sosainmobiliaria.com","nuevo":False,"fuente":"Sosa Inmobiliaria"},
+  {"tipo":"Terreno","titulo":"Lote parquizado 650m² — Santa Inés, Garupá","barrio":"Posadas","direccion":"Bº Don Fernando, Garupá","precio":27000000,"moneda":"ARS","m2_total":650,"dormitorios":0,"banos":0,"descripcion":"Lote parquizado en zona tranquila residencial, a 15 minutos de Posadas.","inmobiliaria":"Sosa Inmobiliaria","email_inm":"","tel_inm":"+5493764422483","url":"https://www.sosainmobiliaria.com","nuevo":True,"fuente":"Sosa Inmobiliaria"},
+
+  # ZAPANI INMOBILIARIA (Pedernera 2235 — desde 1999)
+  {"tipo":"Departamento","titulo":"Dpto 1 dorm. con placard — Estado de Israel","barrio":"Posadas","direccion":"Estado de Israel 4355 c/ Av. Maipú","precio":58000,"moneda":"USD","m2_total":42,"dormitorios":1,"banos":1,"descripcion":"Departamento luminoso, ideal primera vivienda o inversión, cocina integrada.","inmobiliaria":"Zapani Inmobiliaria","email_inm":"inmobiliariazapani@hotmail.com","tel_inm":"+5493764436113","url":"https://www.inmobiliariazapani.com.ar","nuevo":True,"fuente":"Zapani Inmobiliaria"},
+  {"tipo":"Terreno","titulo":"Terreno 400m² con buen plan de financiación","barrio":"Posadas","direccion":"Brig. Pedernera, zona residencial","precio":26000,"moneda":"USD","m2_total":400,"dormitorios":0,"banos":0,"descripcion":"Lote con el mejor plan de financiación del mercado, ideal para construir.","inmobiliaria":"Zapani Inmobiliaria","email_inm":"inmobiliariazapani@hotmail.com","tel_inm":"+5493764436113","url":"https://www.inmobiliariazapani.com.ar","nuevo":False,"fuente":"Zapani Inmobiliaria"},
+  {"tipo":"Casa","titulo":"Casa 3 dorms. con amplio terreno — zona Maipú","barrio":"Posadas","direccion":"Av. Maipú al 4300","precio":98000,"moneda":"USD","m2_total":220,"dormitorios":3,"banos":2,"descripcion":"Casa familiar con amplio terreno, garage, ideal para ampliar o construir en altura.","inmobiliaria":"Zapani Inmobiliaria","email_inm":"inmobiliariazapani@hotmail.com","tel_inm":"+5493764436113","url":"https://www.inmobiliariazapani.com.ar","nuevo":True,"fuente":"Zapani Inmobiliaria"},
 ]
 
 def semilla_a_props():
@@ -402,6 +427,245 @@ async def scrape_argenprop(client):
     log.info(f"Argenprop: {len(res)}")
     return res
 
+async def scrape_torres(client):
+    """Torres Inmobiliaria — página única con ~50+ propiedades, datos completos."""
+    res = []
+    url = "https://inmobiliariatorres.com.ar/2023/properties-grid-3/index.php?tipo_operacion=venta"
+    try:
+        r = await client.get(url, headers=HEADERS, timeout=25, follow_redirects=True)
+        if r.status_code != 200:
+            log.warning(f"Torres Inmobiliaria: HTTP {r.status_code}")
+            return res
+        html = r.text
+    except Exception as e:
+        log.warning(f"Torres Inmobiliaria: {e}")
+        return res
+
+    # Cada propiedad es un bloque <a href="ficha.php?id=NNN">...</a> con Venta + precio + tipo
+    bloques = re.findall(
+        r'ficha\.php\?id=(\d+)["\'][^>]*>\s*Venta\s*</a>(.*?)(?=ficha\.php\?id=\d+["\'][^>]*>\s*Venta|$)',
+        html, re.DOTALL
+    )
+    # Patrón alternativo: capturar cada tarjeta completa por id
+    tarjetas = re.findall(
+        r'\["?\.\./ficha\.php\?id=(\d+)["\']?\]\(([^)]+)\)\s*\n*Venta\s*\n*'
+        r'(USD?[\d.,]+|\$[\d.,]+)\s*\n*'
+        r'\[([^\]]+)\]\(https://inmobiliariatorres[^)]+\)\s*\n*'
+        r'##\s*\[([^\]]+)\]',
+        html
+    )
+
+    # Parser robusto basado en bloques "Venta" seguidos de precio, tipo, título, dirección, detalles
+    patron = re.compile(
+        r'Venta\s*\n+\s*(USD[\d\.,]+|\$[\d\.,]+)\s*\n+\s*'
+        r'\[(Casas|Departamentos|Terrenos|Locales|Oficinas|Duplex|Triplex|Chacras/Campos)\]'
+        r'\([^)]+\)\s*\n+\s*##\s*\[([^\]]+)\]\(([^)]+)\)\s*\n+\s*'
+        r'(?:\[([^\]]*)\]\((https://maps\.google\.com/\?q=([\-\d\.]+),([\-\d\.]+))\)|\[([^\]]*)\]\(#\))?'
+        , re.MULTILINE
+    )
+
+    for m in patron.finditer(html):
+        try:
+            precio_raw = m.group(1)
+            tipo_raw   = m.group(2)
+            titulo     = m.group(3).strip()
+            url_ficha  = m.group(4)
+            direccion  = (m.group(5) or m.group(8) or "Posadas").strip()
+            lat = float(m.group(6)) if m.group(6) else None
+            lng = float(m.group(7)) if m.group(7) else None
+
+            moneda = "USD" if precio_raw.upper().startswith("USD") else "ARS"
+            precio = int(re.sub(r'[^\d]', '', precio_raw))
+            if precio <= 0: continue
+
+            # Buscar dormitorios/baños/m2 en el texto que sigue (próximos 300 chars tras el match)
+            ctx = html[m.end():m.end()+400]
+            dm  = re.search(r'Dormitorios:\s*(\d+)', ctx)
+            bm  = re.search(r'Baños:\s*(\d+)', ctx)
+            sm  = re.search(r'Superficie\s*:\s*([\d.]+)\s*m2', ctx)
+
+            tipo_map = {"Casas":"Casa","Departamentos":"Departamento","Terrenos":"Terreno",
+                        "Locales":"Local","Oficinas":"Local","Duplex":"Duplex",
+                        "Triplex":"Duplex","Chacras/Campos":"Terreno"}
+            tipo = tipo_map.get(tipo_raw, "Casa")
+
+            if not lat or not lng:
+                barrio = barrio_de(direccion + " " + titulo)
+                lat, lng = geocode(barrio)
+            else:
+                barrio = barrio_de(direccion + " " + titulo)
+
+            full_url = url_ficha if url_ficha.startswith("http") else \
+                       "https://inmobiliariatorres.com.ar/2023/properties-grid-3/" + url_ficha.lstrip("./")
+
+            res.append({
+                "id": pid("torres", url_ficha), "ref_externa": url_ficha,
+                "fuente": "Torres Inmobiliaria", "tipo": tipo,
+                "titulo": titulo.capitalize(), "barrio": barrio, "direccion": direccion,
+                "ciudad": "Posadas", "precio": precio, "moneda": moneda,
+                "m2_total": int(float(sm.group(1))) if sm else None, "m2_cubierto": None,
+                "dormitorios": int(dm.group(1)) if dm else None,
+                "banos": int(bm.group(1)) if bm else None,
+                "descripcion": titulo, "fotos": [], "url": full_url,
+                "inmobiliaria": "Torres Inmobiliaria",
+                "email_inm": "info@inmobiliariatorres.com.ar", "tel_inm": "+543764533092",
+                "lat": round(lat,6), "lng": round(lng,6),
+                "fecha": datetime.today().strftime("%Y-%m-%d"), "nuevo": False,
+            })
+        except Exception:
+            continue
+
+    log.info(f"Torres Inmobiliaria: {len(res)}")
+    return res
+
+
+async def scrape_davina(client):
+    """Daviña Inmobiliaria — WordPress, paginación ?paged-1=N"""
+    res = []
+    for pag in range(1, MAX_PAGES + 1):
+        url = "https://davinia.com.ar/" if pag == 1 else f"https://davinia.com.ar/?paged-1={pag}"
+        try:
+            r = await client.get(url, headers=HEADERS, timeout=25, follow_redirects=True)
+            if r.status_code != 200: break
+            html = r.text
+        except Exception as e:
+            log.warning(f"Daviña pag {pag}: {e}"); break
+
+        # Cada propiedad: enlace a /property/slug/ seguido de precio, dirección, descripción, camas/baños/m2
+        bloques = re.findall(
+            r'### \[([^\]]+)\]\((https://davinia\.com\.ar/property/[^)]+)\)\s*\n+'
+            r'(Consultar precio|USD [\d,]+|Pesos|\$[\d,]+)?\s*\n*'
+            r'([^\n]*Posadas[^\n]*|[^\n]*Misiones[^\n]*|[^\n]*Garupa[^\n]*)?',
+            html
+        )
+        if not bloques: break
+
+        for titulo, url_p, precio_raw, direccion in bloques:
+            try:
+                precio_raw = (precio_raw or "").strip()
+                if not precio_raw or "Consultar" in precio_raw:
+                    precio, moneda = 0, "USD"
+                elif "USD" in precio_raw:
+                    moneda = "USD"
+                    precio = int(re.sub(r'[^\d]', '', precio_raw))
+                elif "Pesos" in precio_raw:
+                    continue  # sin valor numérico real
+                else:
+                    moneda = "ARS"
+                    precio = int(re.sub(r'[^\d]', '', precio_raw))
+                if precio <= 0: continue
+
+                direccion = (direccion or "Posadas, Misiones").strip()
+                barrio = barrio_de(direccion + " " + titulo)
+                lat, lng = geocode(barrio)
+
+                # Buscar camas/baños/m2 cerca del bloque en el html original
+                idx = html.find(url_p)
+                ctx = html[idx:idx+600] if idx >= 0 else ""
+                dm = re.search(r'\*\*(\d+)\*\*\s*camas', ctx)
+                bm = re.search(r'\*\*(\d+)\*\*\s*balneario', ctx)
+                sm = re.search(r'\*\*([\d.]+)\*\*\s*m²', ctx)
+
+                res.append({
+                    "id": pid("davina", url_p), "ref_externa": url_p,
+                    "fuente": "Daviña Inmobiliaria", "tipo": tipo_de(titulo),
+                    "titulo": titulo.strip(), "barrio": barrio, "direccion": direccion,
+                    "ciudad": "Posadas", "precio": precio, "moneda": moneda,
+                    "m2_total": int(float(sm.group(1))) if sm else None, "m2_cubierto": None,
+                    "dormitorios": int(dm.group(1)) if dm else None,
+                    "banos": int(bm.group(1)) if bm else None,
+                    "descripcion": titulo, "fotos": [], "url": url_p,
+                    "inmobiliaria": "Daviña Inmobiliaria",
+                    "email_inm": "davinainmobiliaria@gmail.com", "tel_inm": "+5493764425983",
+                    "lat": lat, "lng": lng,
+                    "fecha": datetime.today().strftime("%Y-%m-%d"), "nuevo": False,
+                })
+            except Exception:
+                continue
+        await asyncio.sleep(DELAY)
+    log.info(f"Daviña Inmobiliaria: {len(res)}")
+    return res
+
+
+async def scrape_sosa(client):
+    """Sosa Inmobiliaria — CMS Xintel, paginación ?ope=V&p=N"""
+    res = []
+    for pag in range(0, MAX_PAGES):
+        url = f"https://www.sosainmobiliaria.com/propiedades.php?ope=V&p={pag}"
+        try:
+            r = await client.get(url, headers=HEADERS, timeout=25, follow_redirects=True)
+            if r.status_code != 200: break
+            html = r.text
+        except Exception as e:
+            log.warning(f"Sosa pag {pag}: {e}"); break
+
+        bloques = re.findall(
+            r'- \[([a-z0-9\-]+)\]\(https://www\.sosainmobiliaria\.com/[a-z0-9\-]+\)\s*\n+'
+            r'Venta\s*\n+\s*### \[([^\]]+)\]\([^)]+\)\s*\n+\s*'
+            r'([^\n]+)\s*\n+\s*'
+            r'\$\s*([\d]+)\s*\n+\s*'
+            r'([^\[]+)',
+            html
+        )
+        if not bloques: break
+
+        for slug, titulo, ubicacion, precio_str, descripcion in bloques:
+            try:
+                precio = int(precio_str)
+                if precio <= 0: continue
+                barrio = barrio_de(ubicacion + " " + titulo)
+                lat, lng = geocode(barrio)
+                res.append({
+                    "id": pid("sosa", slug), "ref_externa": slug,
+                    "fuente": "Sosa Inmobiliaria", "tipo": tipo_de(titulo),
+                    "titulo": (titulo + " " + ubicacion).strip()[:80], "barrio": barrio,
+                    "direccion": ubicacion.strip(), "ciudad": "Posadas",
+                    "precio": precio, "moneda": "ARS",
+                    "m2_total": None, "m2_cubierto": None,
+                    "dormitorios": None, "banos": None,
+                    "descripcion": descripcion.strip()[:200], "fotos": [],
+                    "url": f"https://www.sosainmobiliaria.com/{slug}",
+                    "inmobiliaria": "Sosa Inmobiliaria",
+                    "email_inm": "", "tel_inm": "+5493764422483",
+                    "lat": lat, "lng": lng,
+                    "fecha": datetime.today().strftime("%Y-%m-%d"), "nuevo": False,
+                })
+            except Exception:
+                continue
+        await asyncio.sleep(DELAY)
+    log.info(f"Sosa Inmobiliaria: {len(res)}")
+    return res
+
+
+async def scrape_zapani(client):
+    """Zapani Inmobiliaria — Tokko Broker CMS"""
+    res = []
+    for tipo_url, tipo_nombre in [("Terrenos","Terreno"),("Departamentos","Departamento"),
+                                    ("Casas","Casa"),("Locales","Local")]:
+        url = f"https://www.inmobiliariazapani.com.ar/{tipo_url}"
+        try:
+            r = await client.get(url, headers=HEADERS, timeout=25, follow_redirects=True)
+            if r.status_code != 200:
+                log.warning(f"Zapani {tipo_url}: HTTP {r.status_code}")
+                continue
+            html = r.text
+        except Exception as e:
+            log.warning(f"Zapani {tipo_url}: {e}")
+            continue
+
+        items = parse_html_generico(
+            html, "Zapani Inmobiliaria", url,
+            "inmobiliariazapani@hotmail.com", "+5493764436113"
+        )
+        for it in items:
+            it["tipo"] = tipo_nombre
+        res.extend(items)
+        await asyncio.sleep(DELAY)
+
+    log.info(f"Zapani Inmobiliaria: {len(res)}")
+    return res
+
+
 async def scrape_locales(client):
     res = []
     fuentes = [
@@ -433,6 +697,10 @@ async def ejecutar_scraping():
             scrape_zonaprop(client),
             scrape_argenprop(client),
             scrape_locales(client),
+            scrape_torres(client),
+            scrape_davina(client),
+            scrape_sosa(client),
+            scrape_zapani(client),
             return_exceptions=True,
         )
     scraped = []
